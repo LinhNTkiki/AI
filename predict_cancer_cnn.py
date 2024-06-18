@@ -1011,4 +1011,10 @@ subprocess.run(install_command, shell=True)
 #     st.write(f"Dự đoán: {labels[preds[0]]}")
 #
 
-!streamlit run app.py & npx localtunnel --port 8501
+import subprocess
+
+# Start the Streamlit app
+subprocess.Popen(['streamlit', 'run', 'app.py'])
+
+# Start the localtunnel
+subprocess.Popen(['npx', 'localtunnel', '--port', '8501'])
