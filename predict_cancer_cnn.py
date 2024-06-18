@@ -947,7 +947,14 @@ for i in range(num_images_to_display):
 
 plt.show()
 
-pip install streamlit torch torchvision pillow
+import subprocess
+
+# Command to install packages
+install_command = "pip install streamlit torch torchvision pillow"
+
+# Execute the command
+subprocess.run(install_command, shell=True)
+
 
 # Commented out IPython magic to ensure Python compatibility.
 # %%writefile app.py
