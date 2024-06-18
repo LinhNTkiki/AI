@@ -10,6 +10,29 @@ import os
 
 # Tạo thư mục nếu chưa tồn tại
 os.makedirs(os.path.expanduser("~/.kaggle"), exist_ok=True)
+import os
+import json
+
+# Tạo thư mục ~/.kaggle nếu chưa tồn tại
+os.makedirs(os.path.expanduser("~/.kaggle"), exist_ok=True)
+
+# Đường dẫn tới tệp kaggle.json
+kaggle_json_path = os.path.expanduser("~/.kaggle/kaggle.json")
+
+# Nội dung của tệp kaggle.json, bạn cần thay đổi {your_kaggle_api_key} và {your_kaggle_username} thành thông tin thực tế của bạn
+kaggle_credentials = {
+    "username": "{your_kaggle_username}",
+    "key": "{your_kaggle_api_key}"
+}
+
+# Ghi thông tin vào tệp kaggle.json
+with open(kaggle_json_path, 'w') as f:
+    json.dump(kaggle_credentials, f)
+
+# Đặt quyền cho tệp kaggle.json
+os.chmod(kaggle_json_path, 0o600)
+
+print("Kaggle API credentials are set up.")
 
 !mkdir -p ~/.kaggle
 !cp kaggle.json ~/.kaggle/
