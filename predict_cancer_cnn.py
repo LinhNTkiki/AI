@@ -780,7 +780,14 @@ for name, layer in resnet50_model.named_modules():
     if isinstance(layer, torch.nn.Conv2d):
         print(f"Layer name: {name}, Output size: {layer.weight.size()}")
 
-pip install torchviz
+import subprocess
+
+# Command to install torchviz
+install_command = "pip install torchviz"
+
+# Execute the command
+subprocess.run(install_command, shell=True)
+
 
 import torch
 import torchvision.models as models
