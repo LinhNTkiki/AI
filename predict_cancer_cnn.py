@@ -7,7 +7,7 @@ Original file is located at
     https://colab.research.google.com/drive/1WJ7GqD5A8gQIDIDcC78W_SDybjqkWE15
 """
 import os
-import shutil
+import subprocess
 
 # Tạo thư mục ~/.kaggle nếu chưa tồn tại
 kaggle_dir = os.path.expanduser("~/.kaggle")
@@ -16,10 +16,23 @@ os.makedirs(kaggle_dir, exist_ok=True)
 # Sao chép tệp kaggle.json vào thư mục ~/.kaggle/
 shutil.copy("kaggle.json", kaggle_dir)
 
-print("Directory created and file copied.")
+# Đường dẫn tới tệp kaggle.json
+kaggle_json_path = os.path.join(kaggle_dir, "kaggle.json")
 
+# Đặt quyền cho tệp kaggle.json
+os.chmod(kaggle_json_path, 0o600)
 
-!kaggle datasets download -d aryashah2k/breast-ultrasound-images-dataset
+print("Directory created, file copied, and permissions set.")
+
+# Tải xuống dữ liệu từ Kaggle
+dataset = "aryashah2k/breast-ultrasound-images-dataset"
+subprocess.run(["kaggle", "datasets", "download", "-d", dataset, "-p", "/mount/src/ai/"])
+
+# Giải nén tệp tải xuống
+zip_path = os.path.join("/mount/src/ai", "breast-ultrasound-images-dataset.zip")
+subprocess.run(["unzip", zip_path, "-d", "/mount/src/ai/"])
+
+print("Dataset downloaded and extracted.")
 
 import zipfile
 zip_ref = zipfile.ZipFile('/content/breast-ultrasound-images-dataset.zip', 'r')
