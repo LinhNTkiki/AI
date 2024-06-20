@@ -9,13 +9,13 @@ from streamlit.runtime.uploaded_file_manager import UploadedFile
 IMG_SIZE = 224
 SAMPLE_IMG_DIR = Path("sample_images")
 
-title = "Breast Cancer Detector"
+title = "Dự đoán ung thư vú"
 st.set_page_config(page_title=title)
 st.header(title)
 st.markdown(
-    "Predict whether breast tumours in [histopathological][hp] images are"
-    " *benign*, *normal*, or *malignant (cancerous)*.\n\n"
-    "[hp]: https://en.wikipedia.org/wiki/Histopathology"
+    "Dự đoán khối u vú trên hình ảnh siêu âm [ungthuvu][hp] là"
+    " *benign*, *normal* or *malignant (ung thư)*.\n\n"
+    "[hp]: https://vi.wikipedia.org/wiki/Ung_th%C6%B0_v%C3%BA"
 )
 
 
@@ -44,7 +44,7 @@ def get_sample_image_files() -> dict[str, list]:
     """Fetch processed sample images, grouped by label.
 
     Returns:
-        dict: Keys are labels ("benign" / "normal" / "malignant"). Values are lists of
+        dict: Keys are labels ("benign", "malignant", "normal"). Values are lists of
         images.
     """
     return {
@@ -60,7 +60,10 @@ def load_model() -> tf.keras.Model:
     Returns:
         tf.keras.Model: Trained convolutional neural network.
     """
-    return tf.keras.models.load_model("cnn_model.h5")
+    model_path = "cnn_model_multiclass.h5"
+    if not Path(model_path).exists():
+        raise FileNotFoundError(f"Model file not found: {model_path}")
+    return tf.keras.models.load_model(model_path)
 
 
 def get_prediction(image: Image.Image | tf.Tensor) -> None:
@@ -70,47 +73,35 @@ def get_prediction(image: Image.Image | tf.Tensor) -> None:
     Args:
         image (Image | Tensor): An image (PIL Image or 3D tensor).
     """
-    labels = ["benign", "normal", "malignant"]
-    predictions = model.predict(np.expand_dims(image, 0), verbose=0)[0]
-    pred_class = np.argmax(predictions)
-    
-    st.markdown(f"### Prediction: {labels[pred_class]}")
-    st.markdown(f"#### Confidence:")
-    st.bar_chart(predictions)
-    
-    st.caption(
-        "The model's output node uses a softmax activation function, where 'malignant' "
-        "is the positive class (2), 'normal' is neutral (1), and 'benign' is the negative "
-        "class (0)."
-    )
-
+    pred = model.predict(np.expand_dims(image, 0), verbose=0)[0]
+    class_names = ["benign", "malignant", "normal"]
+    predicted_class = class_names[np.argmax(pred)]
+    st.success(f"Prediction: {predicted_class}")
+    st.markdown(f"Predicted probabilities: {dict(zip(class_names, pred))}")
+  
 
 sample_images = get_sample_image_files()
-model = load_model()
 
-upload_tab, sample_tab = st.columns(2)
+try:
+    model = load_model()
+except FileNotFoundError as e:
+    st.error(f"Error: {e}")
+    st.stop()
+
+upload_tab, sample_tab = st.tabs(["Tải ảnh lên", "Sử dụng ảnh mẫu"])
 
 with upload_tab:
     with st.form("image-input-form", clear_on_submit=True):
         file = st.file_uploader("Upload image", type=["jpg", "jpeg", "png"])
-        submitted = st.form_submit_button("Submit")
+        submitted = st.form_submit_button("submit")
         if file:
             img = load_image(file, resize=True)
             st.image(img.numpy().astype("uint8"))
             get_prediction(img)
 
-with sample_tab:
-    if st.button("Get sample image", type="primary"):
-        # Randomly select a sample image
-        label = np.random.choice(["benign", "normal", "malignant"])
-        image_list = sample_images[label]
-        idx = np.random.choice(len(image_list))
-        st.image(image_list[idx], caption=f"{label} sample")
-        get_prediction(image_list[idx])
 
 st.caption(
-    "Exploratory data analysis and model training were performed in "
+    "Phân tích dữ liệu thăm dò và đào tạo mô hình đã được thực hiện trong "
     "[this Kaggle notebook][nb].\n\n"
-    "[nb]: https://www.kaggle.com/code/timothyabwao/detecting-breast-cancer"
-    "-with-computer-vision"
+    "[nb]: https://www.kaggle.com/datasets/aryashah2k/breast-ultrasound-images-dataset-with-computer-vision"
 )
